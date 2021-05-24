@@ -161,6 +161,12 @@ image::create-abstimmen-3.png[500,500]
 - Columns links auflkappen
 {nbsp} +
 {nbsp} +
+- *ERGID* auswählen -> zu Default
+
+image::create-abstimmen-4.png[]
+{nbsp} +
+{nbsp} +
+
 - *POSID* auswählen
 - Type zu Select List ändern
 - Bei List of Values als Type SQL Query auswählen
