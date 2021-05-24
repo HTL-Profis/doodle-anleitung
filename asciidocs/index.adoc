@@ -263,7 +263,8 @@ image::home-2.png[500,500]
 {nbsp} +
 {nbsp} +
 - Falls was nicht geht +
--> https://tinyurl.com/hilfreiche-seite
+-> https://tinyurl.com/hilfreiche-seite +
+-> https://tinyurl.com/auch-hilfreich
 
 
 
