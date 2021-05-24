@@ -255,7 +255,15 @@ image::home-2.png[500,500]
 
 
 
+== Credits
 
+- Jonas Birklbauer
+- Nico Bojer
+- Tarik Hošić
+{nbsp} +
+{nbsp} +
+- Falls was nicht geht +
+-> https://tinyurl.com/hilfreiche-seite
 
 
 
