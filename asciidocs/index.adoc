@@ -1,5 +1,5 @@
-= My Project
-firstname lastname
+= Anleitung Doodle
+Birklbauer, Bojer, Hosic
 1.0.0, yyyy-mm-dd: Some notes
 ifndef::imagesdir[:imagesdir: images]
 //:toc-placement!:  // prevents the generation of the doc at this position, so it can be printed afterwards
@@ -14,8 +14,251 @@ ifdef::backend-html5[]
 // print the toc here (not at the default position)
 //toc::[]
 
-== Header 1
+== Create Tables
+
+-> SQL Workshop -> SQL Commands
+
+- Einen Befehl nach der Reihe kopieren sonst nix gehen :(
+
+[source, sql]
+----
+CREATE TABLE abstimmung(
+    kopfid NUMBER(5, 0) NOT NULL,
+    name VARCHAR2(100),
+    CONSTRAINT pk_abstimmung PRIMARY KEY(kopfid)
+);
+
+CREATE TABLE abstimmung_position(
+    kopfid NUMBER(5, 0) NOT NULL,
+    posid NUMBER(5, 0) NOT NULL,
+    termin DATE,
+
+    CONSTRAINT pk_abstimmung_position PRIMARY KEY(posid),
+    CONSTRAINT fk_abstimmung FOREIGN KEY(kopfid) REFERENCES abstimmung(kopfid)
+)
+
+CREATE TABLE abstimmung_ergebnis(
+    ergid NUMBER(5, 0),
+    posid NUMBER(5, 0),
+    name VARCHAR2(1000),
+    ergebnis VARCHAR2(1),
+
+    CONSTRAINT pk_abstimmung_ergebnis PRIMARY KEY(ergid),
+    CONSTRAINT fk_abstimmung_position FOREIGN KEY(posid) REFERENCES abstimmung_position(posid),
+    CONSTRAINT chk_abstimmung_ergebnis CHECK(UPPER(ergebnis) LIKE 'Y' OR UPPER(ergebnis) LIKE 'N')
+)
+----
 
 
-=== Header 2
+== Create Sequences
+* seq_kopfid
+* seq_posid
+* seq_ergid
+
+-> SQL-Workshop -> Object Browser -> Rechts aufs Plus -> Sequence
+-> Jeweiligen Namen in Sequence Name -> *Next* -> *Create Sequence*
+
+== Create Application
+
+- Desktop
+- *Name*: Doodle
+{nbsp}  +
+{nbsp}  +
+- *Pages*: Home-Page löschen
+- *Add Page*
+- Select Report
+
+image::start-1.png[500,500]
+
+- *Add Page*
+{nbsp} +
+{nbsp} +
+- *Authentication Scheme*: No Authentication
+- *Date-Formats*: optional auch leer sinds ok :)
+{nbsp} +
+{nbsp} +
+- *Create Application*
+
+
+
+
+== Master Detail Page
+
+- *Create Page*
+{nbsp} +
+{nbsp} +
+- *Select Form*
+- *Select Single Page Master Detail*
+
+--
+image::master-detail.png[500,500]
+image::master-detail-2.png[500,500]
+--
+
+--
+image::master-detail-3.png[500,500]
+image::master-detail-4.png[500,500]
+--
+
+- *Create*
+{nbsp} +
+{nbsp} +
+
+- *KOPFID* auswählen und in der Default-Section die Sequence angeben
+
+image::master-detail-5.png[300,300]
+image::master-detail-6.png[500,500]
+
+- *Optional*: Name links auswählen und als Textfeld
+
+- *Columns von Detail* links aufklappen
+- *POSID* auswählen
+- Vorgang wiederholen - andere Sequence natürlich :)
+
+- *Datepicker* auswählen
+- *Rechts unter Settings* -> Show auf Both
+
+
+== Selbst Abstimmen
+
+- Neue Page erstellen
+{nbsp} +
+{nbsp} +
+- Report -> Interactive Grid
+
+image::create-abstimmen.png[500,500]
+
+- Keinen neuen Navigation Entry
+
+image::create-abstimmen-2.png[500,500]
+
+- *Create*
+{nbsp} +
+{nbsp} +
+
+- *Abstimmen Region* links auswählen
+- Vorhandene SQL Query mit Folgender ändern
+
+[source, sql]
+----
+select ERGID,
+       POSID,
+       NAME,
+       ERGEBNIS
+  from ABSTIMMUNG_ERGEBNIS
+where posid in (select posid from abstimmung_position where kopfid=:P3_KOPFID)
+----
+
+- *In Component View*: Neues Page Item erstellen,
+
+image::create-abstimmen-3.png[500,500]
+
+- Region auswählen, gibt ja eh nur eine ;)
+
+{nbsp} +
+{nbsp} +
+
+- Columns links auflkappen
+{nbsp} +
+{nbsp} +
+- *POSID* auswählen
+- Type zu Select List ändern
+- Bei List of Values als Type SQL Query auswählen
+
+[source, sql]
+----
+select termin d, posid r from abstimmung_position where kopfid = :P3_KOPFID
+----
+
+- *Save*
+{nbsp} +
+{nbsp} +
+- *Name* auswählen
+- Type zu Textfield ändern
+{nbsp} +
+{nbsp} +
+- *Ergebnis* auswählen
+- Type zu Select List ändern
+- Bei List of Values als Type Static Values auswählen
+
+----
+STATIC:Ja;Y,Nein;N
+----
+
+== Graph
+
+* Neue Page erstellen -> *Chart* -> *Bar*
+
+
+image::graph.png[500,500]
+
+* Keinen neuen Navigation Entry
+{nbsp} +
+{nbsp} +
+* Soll wie folgt ausschauen:
+
+image::graph-2.png[500,500]
+
+[source, sql]
+----
+select null, to_char(TERMIN, 'DD-MM-YYYY') as Termin,
+       (select count(*) from ABSTIMMUNG_ERGEBNIS erg
+       where pos.POSID = erg.POSID and erg.ERGEBNIS='Y') as Count
+from ABSTIMMUNG_POSITION pos where pos.KOPFID = :P4_KOPFID;
+----
+
+image::graph-3.png[500,500]
+
+* *Create*
+
+* Optional: Links Series 1 auswählen und umbennenen (z.B. zu Result)
+
+* *Save*
+{nbsp} +
+{nbsp} +
+* *In Component View*: Neues Page Item erstellen,
+
+image::graph-4.png[500,500]
+
+- Region auswählen, gibt ja eh nur eine ;)
+{nbsp} +
+{nbsp} +
+- *Save*
+
+== Auf Page 1 wechseln
+
+- *Abstimmung Region* auswählen
+- SQL Query auf Folgende ändern
+
+[source, sql]
+----
+select name, kopfid, 'Ergebnis' as Ergebnis from abstimmung
+----
+
+- *Columns links* aufklappen
+{nbsp} +
+{nbsp} +
+- *KOPFID* auswählen -> Type auf Hidden Column
+- *Name* auswählen -> Type auf Link ändern -> *No Link Defined* Button betätigen
+und zu folgendem ändern
+
+image::home.png[500,500]
+
+- Linktext in der Select List auf das 1. ändern (NAME)
+
+- *Ergebnis* auswählen -> Type auf Link ändern -> *No Link Defined* Button betätigen
+und zu folgendem ändern
+
+image::home-2.png[500,500]
+
+- Linktext in der Select List auf das 1. ändern (ERGEBNIS)
+
+
+
+
+
+
+
+
+
 
